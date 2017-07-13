@@ -6,23 +6,26 @@ import sys
 import xbox
 import threading
 import math
-HOST = "192.168.1.1"
+HOST = "192.168.23.1"
+#HOST = "192.168.1.114"
 
 vel = 0
 turn = 0
+
+MAX_SPEED = 0.5
 
 def write_telnet(s, command):
   s.send(command + '\n')
 
 def set_speed(s, v_l, v_r):
-    if v_l > 1:
-        v_l = 1
-    if v_l < -1:
-        v_l = -1
-    if v_r > 1:
-        v_r = 1
-    if v_r < -1:
-        v_r = -1
+    if v_l > MAX_SPEED:
+        v_l = MAX_SPEED
+    if v_l < -MAX_SPEED:
+        v_l = -MAX_SPEED
+    if v_r > MAX_SPEED:
+        v_r = MAX_SPEED
+    if v_r < -MAX_SPEED:
+        v_r = -MAX_SPEED
 
     vli = int(v_l * 100)
     vri = int(v_r * 100)
@@ -50,13 +53,13 @@ def manual_drive(s):
         if xboxControlId == 8 and value == 1:
             write_telnet(s, "drive 0 0")
             print("pause here")
-        if xboxControlId == 4:
+        if xboxControlId == 5:
             global vel
             vel = value / 200.0
             update_speed(s)
-        if xboxControlId == 5:
+        if xboxControlId == 2:
             global vel
-            vel = -value / 200.0
+            vel = -(value + 100.0) / 400.0
             update_speed(s)
         #print "Control Id = {}, Value = {}".format(xboxControlId, value)
 
@@ -72,7 +75,7 @@ def manual_drive(s):
 	##vel = yValue / 200.0
 
     #setup xbox controller, set out the deadzone and scale, also invert the Y Axis (for some reason in Pygame negative is up - wierd! 
-    xboxCont = xbox.XboxController(controlCallBack, deadzone = 2, scale = 100, invertYAxis = True)
+    xboxCont = xbox.XboxController(controlCallBack, deadzone = 20, scale = 100, invertYAxis = True)
 
     #setup the left thumb (X & Y) callbacks
     xboxCont.setupControlCallback(xboxCont.XboxControls.LTHUMBX, leftThumbX)
